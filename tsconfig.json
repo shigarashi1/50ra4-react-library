@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "lib": ["ES2019"],
+    "module": "commonjs",
+    "target": "ES2019",
+    "esModuleInterop": true,
+    "importHelpers": true,
+    "declaration": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "sourceMap": true,
+    "noImplicitAny": false,
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "noEmitHelpers": true,
+    "outDir": "dist",
+    // "rootDir": ".",
+    // "baseUrl": "./",
+    "typeRoots": ["node_modules/@types", "src/types"],
+    "strict": true
+  },
+  "include": ["./src", "./test"],
+  "exclude": ["node_modules", "docs"]
+}

@@ -1,0 +1,69 @@
+{
+  "name": "50ra4-react-library",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "prepare": "npm run build",
+    "test": "jest -c ./jest.config.json --watch",
+    "test-ci": "jest -c ./jest.config.json --ci --onlyChanged",
+    "clean": "rimraf ./dist",
+    "build-check": "tsc --noEmit",
+    "build-es6": "tsc -p ./tsconfig.build-es6.json",
+    "build": "npm run clean && npm run build-module && npm run build-es6",
+    "touch-nojeykll": "nodetouch docs/.nojekyll",
+    "generate-typedoc": "typedoc --options ./typedoc.json && npm run touch-nojeykll"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run build-check && npm run test-ci && lint-staged"
+    }
+  },
+  "lint-staged": {
+    "src/**/*.{ts,tsx}": [
+      "eslint --fix",
+      "git add"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shigarashi1/50ra4-react-library.git"
+  },
+  "author": "s.igarashi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/shigarashi1/50ra4-react-library/issues"
+  },
+  "homepage": "https://github.com/shigarashi1/50ra4-react-library#readme",
+  "dependencies": {
+    "50ra4-library": "git+https://github.com/shigarashi1/50ra4-library.git",
+    "date-fns": "2.16.1",
+    "react": "17.0.1",
+    "react-dom": "17.0.1",
+    "react-redux": "7.2.2",
+    "redux-observable": "1.2.0",
+    "rxjs": "6.6.3"
+  },
+  "devDependencies": {
+    "@types/jest": "26.0.19",
+    "@types/node": "14.14.14",
+    "@types/react": "16.9.55",
+    "@types/react-dom": "16.9.9",
+    "@types/react-redux": "7.1.11",
+    "@typescript-eslint/eslint-plugin": "4.10.0",
+    "@typescript-eslint/parser": "4.10.0",
+    "eslint": "7.15.0",
+    "eslint-config-prettier": "7.0.0",
+    "eslint-plugin-prettier": "3.3.0",
+    "husky": "4.3.6",
+    "jest": "26.6.3",
+    "lint-staged": "10.5.3",
+    "prettier": "2.2.1",
+    "rimraf": "3.0.2",
+    "touch": "3.1.0",
+    "ts-jest": "26.4.4",
+    "ts-node": "9.1.1",
+    "typedoc": "0.19.2",
+    "typescript": "4.1.3"
+  }
+}
