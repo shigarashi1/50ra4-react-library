@@ -1,0 +1,6 @@
+{
+  "mode": "modules",
+  "out": "docs",
+  "exclude": ["**/*+(.spec|.test).ts"],
+  "excludeNotExported": true
+}

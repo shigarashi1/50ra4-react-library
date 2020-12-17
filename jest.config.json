@@ -1,0 +1,18 @@
+{
+  "preset": "ts-jest",
+  "testEnvironment": "node",
+  "moduleFileExtensions": ["js", "ts"],
+  "transformIgnorePatterns": ["/node_modules/(?!(ramda|date-fns)/)"],
+  "transform": {
+    "^.+\\.(ts)$": "ts-jest"
+  },
+  "globals": {
+    "ts-jest": {
+      "tsConfig": "./tsconfig.json"
+    }
+  },
+  "testMatch": ["**/**.test.ts"],
+  "moduleNameMapper": {
+    "^@/(.*)$": "<rootDir>/src/$1"
+  }
+}
