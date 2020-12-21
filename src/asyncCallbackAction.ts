@@ -13,7 +13,7 @@ export type AsyncActionProps<T> = {
   task: Promise<T> | Observable<T>;
   onNext?: AsyncActionNext<T>;
   onError?: AsyncActionNext<any>;
-  onComplete?: Action<any>[];
+  onCompleted?: Action<any>[];
 };
 
 const toActions = (result: any, nextArray: AsyncActionNext<any> = []): Action<any>[] =>
@@ -44,8 +44,8 @@ const executeEpic = <State>(): Epic<AnyAction, Action<any>, State> => (action$) 
       return { result, payload: rest };
     }),
     concatMap(({ result, payload }) => {
-      const { onComplete, onError, onNext } = payload;
-      const completeActions = onComplete || [];
+      const { onCompleted, onError, onNext } = payload;
+      const completeActions = onCompleted || [];
       if (result instanceof Error) {
         return [...toActions(result, onError), ...completeActions];
       }
