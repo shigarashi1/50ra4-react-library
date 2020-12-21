@@ -1,8 +1,9 @@
 import { omit, stringArray2EnumLikeObject } from '50ra4-library';
 import { ActionsObservable, StateObservable } from 'redux-observable';
 import { Subject } from 'rxjs';
-// import { TestScheduler } from 'rxjs/testing';
-import actionCreatorFactory, { Action } from 'typescript-fsa';
+import { TestScheduler } from 'rxjs/testing';
+import { toArray } from 'rxjs/operators';
+import actionCreatorFactory from 'typescript-fsa';
 import { asyncCallbackAction, createAsyncCallbackActionEpics } from '../src';
 
 type User = { id: string; name: string };
@@ -40,7 +41,7 @@ const USERS: User[] = [
   { id: '1', name: 'alice' },
   { id: '2', name: 'bob' },
 ];
-const UserNotFoundErrorMessage = 'no found user';
+const UserNotFoundErrorMessage = 'NOT FOUND USER';
 const ActionExecuteType = '[50ra4-react-library/asyncCallbackAction]/execute';
 
 const getUsername = async (userId: string) =>
@@ -51,7 +52,7 @@ const getUsername = async (userId: string) =>
         return reject(new UserError(UserNotFoundErrorMessage));
       }
       return resolve(user);
-    }, 100);
+    }, 50);
   });
 
 const TestActionProps = {
@@ -63,78 +64,103 @@ const TestActionProps = {
 };
 const TestActionFailedProps = { ...TestActionProps, task: getUsername('3') };
 
-// FIXME: use testScheduler
-class ActionTestScheduler {
-  constructor(private readonly expectedActions: Action<any>[]) {}
-  private count = 0;
-  toEqual(actualAction: Action<any>) {
-    expect(this.expectedActions[this.count]).toEqual(actualAction);
-    this.count++;
-  }
-  get isEnd(): boolean {
-    return this.count === this.expectedActions.length;
-  }
-}
-
 describe('asyncCallbackAction', () => {
-  it('previous', async (done) => {
-    const executeAction = {
-      type: ActionExecuteType,
-      payload: omit(['onPrevious'], TestActionProps),
-    };
-    const scheduler = new ActionTestScheduler([testActions.onPrevious1(), testActions.onPrevious2(), executeAction]);
-    const action$ = ActionsObservable.of(asyncCallbackAction(TestActionProps));
-    const state$ = new StateObservable<State>(new Subject(), null);
-    const dependencies = {};
-    asyncCallbackActionEpics(action$, state$, dependencies).subscribe((actual) => {
-      scheduler.toEqual(actual);
-      if (scheduler.isEnd) {
-        done();
-      }
+  // FIXME: use TestScheduler
+  let testScheduler: TestScheduler;
+
+  beforeEach(() => {
+    jest.resetModules();
+    testScheduler = new TestScheduler((actual, expected) => {
+      expect(actual).toEqual(expected);
+    });
+  });
+
+  afterEach(() => {
+    testScheduler.flush();
+  });
+
+  it.skip('should use TestScheduler', () => {
+    testScheduler.run(({ cold, expectObservable }) => {
+      const state$ = new StateObservable<State>(new Subject(), null);
+      const dependencies = {};
+      const values = {
+        a: asyncCallbackAction(TestActionProps),
+        b: testActions.onPrevious1(),
+        c: testActions.onPrevious2(),
+        d: {
+          type: ActionExecuteType,
+          payload: omit(['onPrevious'], TestActionProps),
+        },
+      };
+      const input$ = 'a';
+      const expect = 'bcd';
+      const test$ = asyncCallbackActionEpics(
+        new ActionsObservable(cold(input$, values)), //
+        state$,
+        dependencies,
+      );
+      expectObservable(test$).toBe(expect, values);
+    });
+  });
+
+  describe('previous', () => {
+    it('should return "onPrevious" and "execute" Actions', async (done) => {
+      const action$ = ActionsObservable.of(asyncCallbackAction(TestActionProps));
+      const state$ = new StateObservable<State>(new Subject(), null);
+      const dependencies = {};
+      asyncCallbackActionEpics(action$, state$, dependencies)
+        .pipe(toArray())
+        .subscribe((actual) => {
+          expect(actual).toEqual([
+            testActions.onPrevious1(),
+            testActions.onPrevious2(),
+            {
+              type: ActionExecuteType,
+              payload: omit(['onPrevious'], TestActionProps),
+            },
+          ]);
+          done();
+        });
     });
   });
   describe('execute', () => {
-    it('task success', async (done) => {
-      const executeAction = {
+    it('should return "onNext" and "onComplete" Actions when task success', async (done) => {
+      const action$ = ActionsObservable.of({
         type: ActionExecuteType,
         payload: omit(['onPrevious'], TestActionProps),
-      };
-      const scheduler = new ActionTestScheduler([
-        testActions.onNext1(USERS[0]),
-        testActions.onNext2(),
-        testActions.onComplete1(),
-        testActions.onComplete2(),
-      ]);
-      const action$ = ActionsObservable.of(executeAction);
+      });
       const state$ = new StateObservable<State>(new Subject(), null);
       const dependencies = {};
-      asyncCallbackActionEpics(action$, state$, dependencies).subscribe((actual) => {
-        scheduler.toEqual(actual);
-        if (scheduler.isEnd) {
+      asyncCallbackActionEpics(action$, state$, dependencies)
+        .pipe(toArray())
+        .subscribe((actual) => {
+          expect(actual).toEqual([
+            testActions.onNext1(USERS[0]),
+            testActions.onNext2(),
+            testActions.onComplete1(),
+            testActions.onComplete2(),
+          ]);
           done();
-        }
-      });
+        });
     });
-    it('task failed', async (done) => {
-      const executeAction = {
+    it('should return "onError" and "onComplete" Actions when task fails', async (done) => {
+      const action$ = ActionsObservable.of({
         type: ActionExecuteType,
         payload: omit(['onPrevious'], TestActionFailedProps),
-      };
-      const scheduler = new ActionTestScheduler([
-        testActions.onError1(new UserError(UserNotFoundErrorMessage)),
-        testActions.onError2(),
-        testActions.onComplete1(),
-        testActions.onComplete2(),
-      ]);
-      const action$ = ActionsObservable.of(executeAction);
+      });
       const state$ = new StateObservable<State>(new Subject(), null);
       const dependencies = {};
-      asyncCallbackActionEpics(action$, state$, dependencies).subscribe((actual) => {
-        scheduler.toEqual(actual);
-        if (scheduler.isEnd) {
+      asyncCallbackActionEpics(action$, state$, dependencies)
+        .pipe(toArray())
+        .subscribe((actual) => {
+          expect(actual).toEqual([
+            testActions.onError1(new UserError(UserNotFoundErrorMessage)),
+            testActions.onError2(),
+            testActions.onComplete1(),
+            testActions.onComplete2(),
+          ]);
           done();
-        }
-      });
+        });
     });
   });
 });
