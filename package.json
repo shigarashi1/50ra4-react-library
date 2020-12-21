@@ -10,7 +10,7 @@
     "clean": "rimraf ./dist",
     "build-check": "tsc --noEmit",
     "build-es6": "tsc -p ./tsconfig.build-es6.json",
-    "build": "npm run clean && npm run build-module && npm run build-es6",
+    "build": "npm run clean && npm run build-es6",
     "touch-nojeykll": "nodetouch docs/.nojekyll",
     "generate-typedoc": "typedoc --options ./typedoc.json && npm run touch-nojeykll"
   },
