@@ -23,8 +23,8 @@ const actionTypes = stringArray2EnumLikeObject([
   'onNext2',
   'onError1',
   'onError2',
-  'onComplete1',
-  'onComplete2',
+  'onCompleted1',
+  'onCompleted2',
 ]);
 const actions = actionCreatorFactory('[asyncCallbackAction/test]');
 const testActions = {
@@ -34,8 +34,8 @@ const testActions = {
   onNext2: actions<void>(actionTypes.onNext2),
   onError1: actions<UserError>(actionTypes.onError1),
   onError2: actions<void>(actionTypes.onError2),
-  onComplete1: actions<void>(actionTypes.onComplete1),
-  onComplete2: actions<void>(actionTypes.onComplete2),
+  onCompleted1: actions<void>(actionTypes.onCompleted1),
+  onCompleted2: actions<void>(actionTypes.onCompleted2),
 };
 const USERS: User[] = [
   { id: '1', name: 'alice' },
@@ -60,7 +60,7 @@ const TestActionProps = {
   task: getUsername('1'),
   onNext: [(v: User) => testActions.onNext1(v), testActions.onNext2()],
   onError: [(v: UserError) => testActions.onError1(v), testActions.onError2()],
-  onComplete: [testActions.onComplete1(), testActions.onComplete2()],
+  onCompleted: [testActions.onCompleted1(), testActions.onCompleted2()],
 };
 const TestActionFailedProps = { ...TestActionProps, task: getUsername('3') };
 
@@ -124,7 +124,7 @@ describe('asyncCallbackAction', () => {
     });
   });
   describe('execute', () => {
-    it('should return "onNext" and "onComplete" Actions when task success', async (done) => {
+    it('should return "onNext" and "onCompleted" Actions when task success', async (done) => {
       const action$ = ActionsObservable.of({
         type: ActionExecuteType,
         payload: omit(['onPrevious'], TestActionProps),
@@ -137,13 +137,13 @@ describe('asyncCallbackAction', () => {
           expect(actual).toEqual([
             testActions.onNext1(USERS[0]),
             testActions.onNext2(),
-            testActions.onComplete1(),
-            testActions.onComplete2(),
+            testActions.onCompleted1(),
+            testActions.onCompleted2(),
           ]);
           done();
         });
     });
-    it('should return "onError" and "onComplete" Actions when task fails', async (done) => {
+    it('should return "onError" and "onCompleted" Actions when task fails', async (done) => {
       const action$ = ActionsObservable.of({
         type: ActionExecuteType,
         payload: omit(['onPrevious'], TestActionFailedProps),
@@ -156,8 +156,8 @@ describe('asyncCallbackAction', () => {
           expect(actual).toEqual([
             testActions.onError1(new UserError(UserNotFoundErrorMessage)),
             testActions.onError2(),
-            testActions.onComplete1(),
-            testActions.onComplete2(),
+            testActions.onCompleted1(),
+            testActions.onCompleted2(),
           ]);
           done();
         });
