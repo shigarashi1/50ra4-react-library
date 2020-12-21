@@ -2,7 +2,12 @@
   "name": "50ra4-react-library",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/es6/index.js",
+  "module": "dist/es6/index.js",
+  "typings": "dist/es6/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "prepare": "npm run build",
     "test": "jest -c ./jest.config.json --watch",
